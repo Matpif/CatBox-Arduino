@@ -23,6 +23,7 @@ String serialString = "";
 long period;
 long periodMotorOn;
 long oneDay;
+long periodLedController;
 long wifiDisconnect;
 
 int nbSequenceByDay = 2; // 2 sequence motor by day
@@ -46,9 +47,10 @@ void setup() {
   }
 
   period = 12L * 60L * 60L * 1000L; // 12 h
-  periodMotorOn = 20L * 1000L; // 20 s
+  periodMotorOn = 2000L; //20L * 1000L; // 20 s
   oneDay = 24L * 60L * 60L * 1000L; // 1 day
   wifiDisconnect = 15L * 1000L; // 15 s
+  periodLedController = 2L * 1000L; // 2 s
   
   pinMode(_pinMotor, OUTPUT);
   pinMode(_pinLEDWifi, OUTPUT);
@@ -59,6 +61,7 @@ void setup() {
   
   timer.every(period, startMotor);
   timer.every(oneDay, initSequenceByDay);
+  timer.every(periodLedController, ledController);
   
   connectWifi();
 
@@ -70,7 +73,6 @@ void setup() {
 // Main programme
 void loop() {
   timer.update();
-  //ledController(); // TODO: Problème plantage timer
 }
 
 // Start Motor since period periodMotorOn
@@ -82,6 +84,9 @@ void startMotor() {
     statMotor = true;
     nbSequenceByDay--;
     digitalWrite(_pinMotor, HIGH);
+    Serial.println("Starting...");
+  } else {
+    Serial.println("Don't start");
   }
 }
 
@@ -136,8 +141,12 @@ void serialEvent(){
 }
 
 void ledController() {
+ 
+  int wifiStatus = 255; //WiFi.status();
 
-  switch (WiFi.status()) {
+  //Serial.print("WifiStatus : ");
+  //Serial.println(WiFi.status());
+  switch (wifiStatus) {
     case WL_CONNECTION_LOST:
     case WL_CONNECT_FAILED:
 
@@ -166,6 +175,7 @@ void ledController() {
       _timerLEDWifi=0;
     break;
   }
+  
 }
 
 void blinkLEDWifi() {
